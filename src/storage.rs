@@ -13,6 +13,12 @@ fn get_storage_path() -> PathBuf {
         let _ = fs::create_dir_all(&todo_dir);
     }
     
+    // Buat .gitignore bawaan di ~/.todo-cli jika belum ada
+    let gitignore_path = todo_dir.join(".gitignore");
+    if !gitignore_path.exists() {
+        let _ = fs::write(&gitignore_path, ".DS_Store\n*.tmp\n");
+    }
+    
     todo_dir.join("tasks.json")
 }
 
@@ -34,21 +40,4 @@ pub fn save_data(storage: &Storage) -> io::Result<()> {
     let path = get_storage_path();
     let data = serde_json::to_string_pretty(storage)?;
     fs::write(path, data)
-}
-
-fn get_storage_path() -> PathBuf {
-    let home_dir = dirs::home_dir().unwrap_or_else(|| PathBuf::from("."));
-    let todo_dir = home_dir.join(".todo-cli");
-
-    if !todo_dir.exists() {
-        let _ = fs::create_dir_all(&todo_dir);
-    }
-
-    // Buat .gitignore bawaan di ~/.todo-cli jika belum ada
-    let gitignore_path = todo_dir.join(".gitignore");
-    if !gitignore_path.exists() {
-        let _ = fs::write(gitignore_path, ".DS_Store\n*.tmp\n");
-    }
-
-    todo_dir.join("tasks.json")
 }
