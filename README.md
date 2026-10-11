@@ -1,8 +1,11 @@
-# Todo-CLI: Daily Hierarchical Task Manager in Rust
+# 🚀 Todo-CLI: Daily Hierarchical Task Manager in Rust
 
 A robust, terminal-based daily task manager built with **Rust**. Designed for time-boxing, structured task hierarchies, daily task persistence, intelligent log archiving, and automated cross-system GitHub synchronization.
 
-## 🚀 Key Features & Core Logic
+[![Built with Rust](https://img.shields.io/badge/Built_with-Rust-orange.svg)](https://www.rust-lang.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
+## ✨ Key Features & Core Logic
 
 1. **Global Storage Architecture**:
    - Stores data globally at `~/.todo-cli/tasks.json` using system home directory resolution.
