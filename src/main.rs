@@ -67,7 +67,6 @@ fn main() {
                 println!("✗ Gagal menyimpan data: {}", e);
             } else {
                 println!("✓ Berhasil menambah tugas utama '{}' dengan alokasi {} menit/hari.", title, time);
-                auto_sync_to_github();
             }
         }
         Commands::Subtask { task_id, title, time } => {
@@ -91,7 +90,6 @@ fn main() {
                         println!("✗ Gagal menyimpan data: {}", e);
                     } else {
                         println!("✓ Berhasil menambah sub-task '{}' ({}m) ke tugas '{}'.", title, time, task_title);
-                        auto_sync_to_github();
                     }
                 }
                 Err(err_msg) => println!("✗ {}", err_msg),
@@ -142,7 +140,6 @@ fn main() {
                     println!("✗ Gagal menyimpan data: {}", e);
                 } else {
                     println!("✓ Sub-task #{} pada task #{} berhasil ditandai selesai untuk hari ini ({})!", subtask_id, task_id, today);
-                    auto_sync_to_github();
                 }
             } else {
                 println!("✗ Sub-task dengan ID {} tidak ditemukan.", subtask_id);
@@ -161,7 +158,6 @@ fn main() {
             println!("✗ Gagal menyimpan data: {}", e);
         } else {
             println!("✓ Task #{} telah diselesaikan secara permanen. Reset harian untuk sub-task dihentikan.", task_id);
-            auto_sync_to_github();
         }
     } else {
         println!("✗ Task dengan ID {} tidak ditemukan.", task_id);
