@@ -1,0 +1,12 @@
+[package]
+name = "todo-cli"
+version = "0.1.0"
+edition = "2024" # Menggunakan Rust Edition terbaru
+
+[dependencies]
+chrono = "0.4.45"
+clap = { version = "4.6.7", features = ["derive"] }
+git2 = "0.21.0"
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.151"
+dirs = "7.0"
