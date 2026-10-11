@@ -126,60 +126,55 @@ fn main() {
             println!("========================================");
         }
         Commands::Done { task_id, subtask_id } => {
-            let update_result = {
-                let task = storage.tasks.iter_mut().find(|t| t.id == task_id);
-                match task {
-                    Some(t) => {
-                        let subtask = t.subtasks.iter_mut().find(|s| s.id == subtask_id);
-                        match subtask {
-                            Some(s) => {
-                                let current_status = s.completion_history.get(&today).copied().unwrap_or(false);
-                                s.completion_history.insert(today.clone(), !current_status);
-                                Ok(s.title.clone())
-                            }
-                            None => Err(format!("Sub-task dengan ID {} tidak ditemukan pada tugas ini.", subtask_id)),
-                        }
-                    }
-                    None => Err(format!("Tugas utama dengan ID {} tidak ditemukan.", task_id)),
-                }
-            };
+    let mut storage = load_data();
+    
+    // 1. Cari task berdasarkan task_id
+    if let Some(task) = storage.tasks.iter_mut().find(|t| t.id == task_id) {
+        // Cek apakah task utama sudah di-complete secara permanen
+        if task.is_globally_completed {
+            println!("✗ Task utama #{} sudah diselesaikan secara permanen. Sub-task tidak dapat diubah lagi.", task_id);
+            return;
+        }
 
-            match update_result {
-                Ok(sub_title) => {
-                    if let Err(e) = save_data(&storage) {
-                        println!("✗ Gagal menyimpan data: {}", e);
-                    } else {
-                        println!("✓ Status sub-task '{}' untuk tanggal {} berhasil diperbarui!", sub_title, today);
-                        auto_sync_to_github();
-                    }
-                }
-                Err(err_msg) => println!("✗ {}", err_msg),
-            }
-        }
+        // 2. Cari subtask berdasarkan subtask_id di dalam task tersebut
+        if let Some(subtask) = task.subtasks.iter_mut().find(|s| s.id == subtask_id) {
+            // Ambil tanggal hari ini dalam format string YYYY-MM-DD
+            let today = Local::now().format("%Y-%m-%d").to_string();
+            
+            // Tandai selesai untuk hari ini di completion_history
+            subtask.completion_history.insert(today.clone(), true);
+
+            // Simpan kembali perubahan ke storage.json
+            if let Err(e) = save_data(&storage) {
+                println!("✗ Gagal menyimpan data: {}", e);
+            } else {
+                println!("✓ Sub-task #{} pada task #{} berhasil ditandai selesai untuk hari ini ({})!", subtask_id, task_id, today);
+                // (Opsional) Jalankan auto-sync jika ada
+                auto_sync_to_github();
+            }
+        } else {
+            println!("✗ Sub-task dengan ID {} tidak ditemukan.", subtask_id);
+        }
+    } else {
+        println!("✗ Task dengan ID {} tidak ditemukan.", task_id);
+    }
+}
         Commands::Complete { task_id } => {
-            let update_result = {
-                let task = storage.tasks.iter_mut().find(|t| t.id == task_id);
-                match task {
-                    Some(t) => {
-                        t.is_globally_completed = true;
-                        Ok(t.title.clone())
-                    }
-                    None => Err(format!("Tugas utama dengan ID {} tidak ditemukan.", task_id)),
-                }
-            };
-
-            match update_result {
-                Ok(task_title) => {
-                    if let Err(e) = save_data(&storage) {
-                        println!("✗ Gagal menyimpan data: {}", e);
-                    } else {
-                        println!("✓ Tugas utama '{}' (ID: {}) telah ditandai SELESAI SECARA PERMANEN dan tidak akan muncul lagi.", task_title, task_id);
-                        auto_sync_to_github();
-                    }
-                }
-                Err(err_msg) => println!("✗ {}", err_msg),
-            }
+    let mut storage = load_data();
+    
+    if let Some(task) = storage.tasks.iter_mut().find(|t| t.id == task_id) {
+        task.is_globally_completed = true;
+        
+        if let Err(e) = save_data(&storage) {
+            println!("✗ Gagal menyimpan data: {}", e);
+        } else {
+            println!("✓ Task #{} telah diselesaikan secara permanen. Reset harian untuk sub-task dihentikan.", task_id);
+            auto_sync_to_github();
         }
+    } else {
+        println!("✗ Task dengan ID {} tidak ditemukan.", task_id);
+    }
+}
         Commands::Archive => {
             use std::fs;
 

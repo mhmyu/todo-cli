@@ -6,6 +6,7 @@ pub struct SubTask {
     pub id: usize,
     pub title: String,
     pub time_allocation_minutes: u32,
+    #[serde(default)] // Tambahkan ini agar aman jika data lama belum memilikinya
     pub completion_history: HashMap<String, bool>,
 }
 
@@ -15,6 +16,7 @@ pub struct Task {
     pub title: String,
     pub time_allocation_minutes: u32,
     pub subtasks: Vec<SubTask>,
+    #[serde(default)] // Tambahkan ini juga
     pub is_globally_completed: bool,
 }
 
