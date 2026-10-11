@@ -182,25 +182,28 @@ fn main() {
         }
         Commands::Archive => {
             use std::fs;
-            use std::path::Path;
 
-            let file_path = "tasks.json";
+            // Ambil path global tasks.json menggunakan logika yang sama dengan storage.rs
+            let home_dir = dirs::home_dir().unwrap_or_else(|| std::path::PathBuf::from("."));
+            let todo_dir = home_dir.join(".todo-cli");
+            let file_path = todo_dir.join("tasks.json");
             
-            if !Path::new(file_path).exists() {
-                println!("ℹ File tasks.json tidak ditemukan, tidak ada yang perlu diarsipkan.");
+            if !file_path.exists() {
+                println!("ℹ File tasks.json tidak ditemukan di direktori global, tidak ada yang perlu diarsipkan.");
                 return;
             }
 
             // 1. Load data saat ini
             let current_storage = load_data();
 
-            // 2. Tentukan nama file arsip berdasarkan waktu saat ini
+            // 2. Tentukan nama file arsip di dalam folder ~/.todo-cli/
             let archive_filename = format!("tasks_archive_{}.json", Local::now().format("%Y-%m-%d_%H-%M-%S"));
+            let archive_path = todo_dir.join(archive_filename);
 
-            // 3. Salin isi file lama utuh-utuh sebagai arsip history (rename file lama)
-            match fs::rename(file_path, &archive_filename) {
+            // 3. Pindahkan file tasks.json lama menjadi file arsip
+            match fs::rename(&file_path, &archive_path) {
                 Ok(_) => {
-                    println!("✓ Berhasil mengarsipkan seluruh riwayat lama ke: {}", archive_filename);
+                    println!("✓ Berhasil mengarsipkan seluruh riwayat lama ke: {:?}", archive_path);
                     
                     // 4. Saring tugas yang BELUM selesai secara global untuk dibawa ke periode baru
                     let active_tasks: Vec<Task> = current_storage
